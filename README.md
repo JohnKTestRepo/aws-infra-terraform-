@@ -1,13 +1,15 @@
+
 # terraform-aws-apache-example
 
 Terraform Module to provision an EC2 Instance running Apache HTTP server.
 
 > Not for production use. This is a demo module to showcase creating a public Terraform module on the Terraform Registry.
-> 
 
-## **Folder structure**
+---
 
-```css
+## 📁 Folder Structure
+
+```
 terraform-aws-apache-example/
 ├── main.tf
 ├── variables.tf
@@ -18,9 +20,29 @@ terraform-aws-apache-example/
 └── README.md
 ```
 
-## 1. How to install Terraform on Windows 10 using Git Bash Terminal in VS Code
+---
 
-1. Download the latest Terraform zip for Windows from the Terraform downloads page.
+## 1. Installing Prerequisites
+
+### ✅ Install Git
+
+Download and install Git from: https://git-scm.com/downloads
+
+Verify installation:
+
+```bash
+git --version
+```
+
+### ✅ Install Visual Studio Code
+
+Download and install VS Code from: https://code.visualstudio.com/
+
+---
+
+## 2. Install Terraform on Windows 10 using Git Bash Terminal in VS Code
+
+1. Download the latest Terraform zip for Windows from the [Terraform downloads page](https://developer.hashicorp.com/terraform/downloads).
 2. Extract the `terraform.exe` binary.
 3. Move `terraform.exe` to a folder on your system PATH, for example `C:\terraform`.
 4. Add this folder to your system environment variables `PATH` if not already present.
@@ -29,84 +51,124 @@ terraform-aws-apache-example/
 
 ```bash
 terraform -version
-
 ```
 
 ---
 
-## 2. Usage
+## 3. Fork and Clone the GitHub Repo
 
-1. **Fork this repository** on GitHub to your own account by clicking the "Fork" button at the top right of the repo page.
+1. **Fork this repository** on GitHub to your own account by clicking the "Fork" button.
 2. Clone your forked repository to your local machine:
 
 ```bash
-git clone <https://github.com/YOUR_GITHUB_USERNAME/terraform-aws-apache-example.git>
+git clone https://github.com/YOUR_GITHUB_USERNAME/terraform-aws-apache-example.git
 cd terraform-aws-apache-example
-
 ```
 
-1. Commit the provided `.gitignore` **before adding any sensitive files**:
-    
-    ```bash
-    git add .gitignore
-    git commit -m "Add .gitignore to protect sensitive files"
-    git push origin main
-    ```
-    
-2. Configure your AWS CLI profile (run once before the demo):
-    
-    ```bash
-    aws configure --profile default (name of profile you created)
-    ```
-    
-3. Copy `terraform.tfvars.example` to `terraform.tfvars` and update your values (do **not** commit this file):
-    
-    ```bash
-    cp terraform.tfvars.example terraform.tfvars
-    ```
-    
-    **Edit** `terraform.tfvars` to add your own values for VPC ID, IP, keys, etc.
-    
-4. Initialize Terraform:
-    
-    ```bash
-    terraform init
-    ```
-    
-5. Validate configuration:
-    
-    ```bash
-    terraform validate
-    ```
-    
-6. Preview changes with plan:
-    
-    ```bash
-    terraform plan -var-file="terraform.tfvars"
-    ```
-    
-7. Deploy resources:
-    
-    ```bash
-    terraform apply -var-file="terraform.tfvars" -auto-approve
-    ```
-    
-8. Get the public IP output:
-    
-    ```bash
-    terraform output public_ip
-    ```
-    
-9. (Optional) SSH into your EC2 instance:
-    
-    ```bash
-    ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output -raw public_ip)
-    ```
-    
+3. Commit the provided `.gitignore` **before adding any sensitive files**:
+
+```bash
+git add .gitignore
+git commit -m "Add .gitignore to protect sensitive files"
+git push origin main
+```
 
 ---
 
-### **Terraform Provider Configuration**
+## 4. Creating SSH Keys (For First-Time Users)
+
+If you don't already have an SSH key pair, generate one:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+clip < ~/.ssh/id_rsa.pub  # Copies public key to clipboard on Windows
+```
+
+Use the public key in your `terraform.tfvars` file:
+
+```hcl
+public_key = "ssh-rsa AAAAB3..."
+```
+
+---
+
+## 5. Configure AWS CLI
+
+Configure AWS credentials (stored in `~/.aws/credentials`):
+
+```bash
+aws configure --profile default
+```
+
+---
+
+## 6. Using the Module
+
+### ✅ Copy the example tfvars file:
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Then edit `terraform.tfvars` to include your actual values.
+
+### ✅ Initialize Terraform
+
+```bash
+terraform init
+```
+
+### ✅ Validate Configuration
+
+```bash
+terraform validate
+```
+
+### ✅ Preview with Plan
+
+```bash
+terraform plan -var-file="terraform.tfvars"
+```
+
+### ✅ Apply and Deploy
+
+```bash
+terraform apply -var-file="terraform.tfvars" -auto-approve
+```
+
+### ✅ Get the Public IP
+
+```bash
+terraform output public_ip
+```
+
+### ✅ SSH Into Your Instance
+
+```bash
+ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output -raw public_ip)
+```
+
+---
+
+## 7. Apache Server Troubleshooting
+
+If Apache doesn’t show in the browser:
+
+- ✅ Run `curl http://<public_ip>` from a terminal — if you see HTML, Apache is running.
+- ✅ Try using a non-Incognito browser window.
+- ✅ Confirm port 80 is open in the security group.
+- ✅ Ensure `userdata.yaml` installs & starts Apache.
+
+To manually check Apache status via SSH:
+
+```bash
+ssh -i ~/.ssh/id_rsa ec2-user@<public_ip>
+sudo systemctl status httpd
+```
+
+---
+
+## 8. Terraform Provider Configuration
 
 The provider is configured to use the AWS CLI named profile `default` and region `us-east-1`:
 
@@ -119,17 +181,12 @@ provider "aws" {
 
 ---
 
-### Credential Safety Best Practices
+## 9. Credential Safety Best Practices
 
-When working with Terraform and AWS, it’s crucial to keep your AWS credentials and private keys secure:
-
-- **Never hardcode AWS access keys or secrets** directly in your Terraform files or commit them to version control.
-- Use **AWS CLI named profiles** stored securely in your `~/.aws/credentials` file, and specify the profile in your Terraform provider configuration (e.g., `profile = "default"`).
-- Keep sensitive files like private keys and `terraform.tfvars` **excluded from Git** by listing them in `.gitignore`.
-- During live demos or recordings, **avoid showing your credentials on screen** — do not open or display credential files or environment variables.
-- Authenticate using preconfigured AWS CLI profiles or environment variables **outside the demo window** to keep your secrets safe.
-
-Following these practices protects your AWS account and infrastructure from accidental exposure or misuse.
+- ❌ Never hardcode AWS access keys or secrets in `.tf` files.
+- ✅ Use AWS CLI named profiles stored in `~/.aws/credentials`.
+- ✅ Keep sensitive files like private keys and `terraform.tfvars` out of Git using `.gitignore`.
+- 🎥 For demos, do not show terminal output with credentials or open those files live.
 
 ---
 
