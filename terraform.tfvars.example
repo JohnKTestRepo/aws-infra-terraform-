@@ -1,0 +1,8 @@
+# Copy this file to terraform.tfvars and update values accordingly
+
+vpc_id           = "vpc-xxxxxxxx"
+my_public_ip     = "YOUR_PUBLIC_IP/32"       # e.g., "104.194.51.113/32"
+public_key       = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA..."  # Your SSH public key
+private_key_path = "~/.ssh/id_rsa"           # Path to your private key
+instance_type    = "t2.micro"                 # AWS EC2 instance type
+server_name      = "demo-apache-server"      # Name tag for your EC2 instance

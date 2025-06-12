@@ -1,0 +1,56 @@
+#cloud-config
+packages:
+  - httpd
+runcmd:
+  - systemctl enable --now httpd
+  - |
+    cat <<EOF > /var/www/html/index.html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Apache on AWS</title>
+      <style>
+        body {
+          font-family: 'Helvetica', sans-serif;
+          background: linear-gradient(120deg, #1E90FF, #00BFFF);
+          color: #fff;
+          min-height: 100vh;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+        }
+        h1 {
+          font-size: 2.5rem;
+          margin: 0.5rem 0;
+        }
+        p {
+          font-size: 1.2rem;
+          margin: 1rem 0;
+        }
+        a {
+          color: #FFD700;
+          text-decoration: none;
+          font-weight: 600;
+          padding: 0.6rem 1.2rem;
+          border: 2px solid #FFD700;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+        a:hover {
+          background: #FFD700;
+          color: #1E90FF;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Welcome to Apache on AWS!</h1>
+      <p>Your web server is up and running on EC2.</p>
+      <a href="https://httpd.apache.org/" target="_blank" rel="noopener noreferrer">Explore Apache</a>
+    </body>
+    </html>
+    EOF
