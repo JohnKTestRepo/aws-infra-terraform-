@@ -1,3 +1,9 @@
+variable "aws_region" {
+  description = "The AWS region to create resources in"
+  type        = string
+  default     = "us-east-2"
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC"
   type        = string
@@ -25,7 +31,3 @@ variable "instance_type" {
 variable "server_name" {
   type = string
 }
-# variable "ami_id" {
-#   description = "The AMI ID to use for the instance"
-#   type        = string
-# }
