@@ -31,13 +31,30 @@ jobs:
         run: |
             cat <<EOF > terraform.tfvars
             region            = "us-east-2"
-            vpc_id           = "${{ secrets.VPC_ID }}"
-            my_public_ip     = "${{ secrets.MY_PUBLIC_IP }}"
-            private_key_path  = "${{ secrets.EC2_PRIVATE_KEY_PATH }}"
+            vpc_id            = "${{ secrets.VPC_ID }}"
+            my_public_ip      = "${{ secrets.MY_PUBLIC_IP }}"
+            private_key_path  = "private_key_pem"
             public_key        = "${{ secrets.EC2_PUBLIC_KEY }}"
             instance_type     = "${{ secrets.EC2_INSTANCE_TYPE }}"
             server_name       = "${{ secrets.EC2_SERVER_NAME }}"
             EOF
+
+      # 5️⃣ Terraform init
+      - name: Terraform Init
+        run: terraform init
+
+      # 6️⃣ Terraform fmt check (auto-fix)
+      - name: Terraform Format
+        run: terraform fmt -recursive
+
+      # 7️⃣ Terraform validate
+      - name: Terraform Validate
+        run: terraform validate
+
+      # 8️⃣ Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan 
 
       # 4️⃣ Destroy Terraform
       - name: Terraform Destroy
