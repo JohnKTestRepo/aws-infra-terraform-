@@ -1,9 +1,10 @@
-name: Terraform AWS Deploy
+name: Terraform AWS CI/CD
 
 on:
   push:
     branches:
       - main  # Trigger on pushes to the main branch
+  workflow_dispatch:
 
 jobs:
   terraform:
@@ -26,42 +27,53 @@ jobs:
         with:
           terraform_version: 1.13.3
 
-      # 3️⃣ Initialize Terraform
-      - name: Terraform Init
-        run: terraform init
-
-      # Create terraform.tfvars file
+      # 3️⃣ Create terraform.tfvars file
       - name: Create terraform.tfvars with secrets
         run: |
             cat <<EOF > terraform.tfvars
             region            = "us-east-2"
-            vpc_id           = "${{ secrets.VPC_ID }}"
-            my_public_ip     = "${{ secrets.MY_PUBLIC_IP }}"
-            private_key_path  = "${{ secrets.EC2_PRIVATE_KEY_PATH }}"
+            vpc_id            = "${{ secrets.VPC_ID }}"
+            my_public_ip      = "${{ secrets.MY_PUBLIC_IP }}"
+            private_key_path  = "private_key_pem"
             public_key        = "${{ secrets.EC2_PUBLIC_KEY }}"
             instance_type     = "${{ secrets.EC2_INSTANCE_TYPE }}"
             server_name       = "${{ secrets.EC2_SERVER_NAME }}"
             EOF
 
-      # 4️⃣ Validate Terraform
+      # 4️⃣ Write private key to file
+      - name: Write private key to file
+        run: |
+          echo "${{ secrets.EC2_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      # 5️⃣ Terraform init
+      - name: Terraform Init
+        run: terraform init
+
+      # 6️⃣ Terraform fmt check (auto-fix)
+      - name: Terraform Format
+        run: terraform fmt -recursive
+
+      # 7️⃣ Terraform validate
       - name: Terraform Validate
         run: terraform validate
 
-      # 5️⃣ Format Terraform
-      - name: Terraform Format Check
-        run: terraform fmt -recursive
-
-      # 6️⃣ Terraform Plan
+      # 8️⃣ Terraform Plan
       - name: Terraform Plan
         id: plan
         run: terraform plan 
 
-      # 7️⃣ Terraform Apply
+      # 9️⃣ Terraform Apply
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply --parallelism=5 -auto-approve
 
-      # 8️⃣ Output EC2 public IP
+      # 🔟 Output EC2 public IP
       - name: Show EC2 Public IP
-        run: terraform output -raw my_public_ip
-        id: ec2_ip    
+        id: ec2_ip
+        run: |
+          echo "EC2_PUBLIC_IP=$(terraform output -raw my_public_ip)" >> $GITHUB_ENV 
+          
+      # 1️⃣1️⃣ Cleanup private key
+      - name: Cleanup
+        run: rm -f private_key.pem
