@@ -3,7 +3,7 @@ name: Terraform AWS Deploy
 on:
   push:
     branches:
-      - cleanup  # Trigger on pushes to the main branch
+      # - cleanup  # Trigger on pushes to the main branch
 
 jobs:
   terraform:

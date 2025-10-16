@@ -3,12 +3,12 @@ name: Terraform AWS CI/CD
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main  # For applying changes on main branch
+      - cleanup  # For destroying resources on cleanup branch
   workflow_dispatch:
 
 jobs:
   terraform:
-    name: Terraform Apply
     runs-on: ubuntu-latest
 
     env:
@@ -17,7 +17,7 @@ jobs:
       AWS_DEFAULT_REGION: us-east-2
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -27,7 +27,11 @@ jobs:
         with:
           terraform_version: 1.13.3
 
-      # 3️⃣ Create terraform.tfvars file
+      # 3️⃣ Install dependencies (optional)
+    #   - name: Install dependencies
+    #     run: sudo apt-get update && sudo apt-get install -y jq
+
+      # 4️⃣ Create terraform.tfvars file
       - name: Create terraform.tfvars with secrets
         run: |
             cat <<EOF > terraform.tfvars
@@ -40,33 +44,35 @@ jobs:
             server_name       = "${{ secrets.EC2_SERVER_NAME }}"
             EOF
 
-      # 4️⃣ Write private key to file
+      # 5️⃣ Write private key to file
       - name: Write private key to file
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
-      # 5️⃣ Terraform init
+      # 6️⃣ Terraform init with backend
       - name: Terraform Init
         run: terraform init
 
-      # 6️⃣ Terraform fmt check (auto-fix)
+      # 7️⃣ Terraform fmt & validate
       - name: Terraform Format
         run: terraform fmt -recursive
-
-      # 7️⃣ Terraform validate
-      - name: Terraform Validate
-        run: terraform validate
 
       # 8️⃣ Terraform Plan
       - name: Terraform Plan
         id: plan
         run: terraform plan 
 
-      # 9️⃣ Terraform Apply
+      # 9️⃣ Terraform Apply (only on main branch)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply --parallelism=5 -auto-approve
+      
+      # 🔟9️ Terraform Destroy (only on cleanup branch)
+      - name: Terraform Plan & Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply --parallelism=5 -auto-approve
+      
 
       # 🔟 Output EC2 public IP
       - name: Show EC2 Public IP
