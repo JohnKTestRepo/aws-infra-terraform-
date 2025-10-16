@@ -9,22 +9,30 @@ When you push changes to the main branch, GitHub Actions automatically runs Terr
 
 ```
 aws-infra-terraform/
-│
-├── modules/
-│   └── ec2_apache/
-│       ├── main.tf
-│       ├── outputs.tf
-│       └── variables.tf
-│
 ├── main.tf
 ├── variables.tf
 ├── outputs.tf
 ├── terraform.tfvars
-├── provider.tf
 ├── .github/
 │   └── workflows/
 │       └── terraform.yml
+├── modules/
+│   ├── ec2/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── security_group/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── key_pair/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+├── userdata.yaml
+│     
 └── README.md
+
 ```
 
 ---
