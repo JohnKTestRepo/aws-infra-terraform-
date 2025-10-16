@@ -1,0 +1,67 @@
+name: Terraform AWS Deploy
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-2
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      # 3️⃣ Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Create terraform.tfvars file
+      - name: Create terraform.tfvars with secrets
+        run: |
+            cat <<EOF > terraform.tfvars
+            region            = "us-east-2"
+            vpc_id           = "${{ secrets.VPC_ID }}"
+            my_public_ip     = "${{ secrets.MY_PUBLIC_IP }}"
+            private_key_path  = "${{ secrets.EC2_PRIVATE_KEY_PATH }}"
+            public_key        = "${{ secrets.EC2_PUBLIC_KEY }}"
+            instance_type     = "${{ secrets.EC2_INSTANCE_TYPE }}"
+            server_name       = "${{ secrets.EC2_SERVER_NAME }}"
+            EOF
+
+      # 4️⃣ Validate Terraform
+      - name: Terraform Validate
+        run: terraform validate
+
+      # 5️⃣ Format Terraform
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      # 6️⃣ Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan 
+
+      # 7️⃣ Terraform Apply
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply --parallelism -auto-approve
+
+      # 8️⃣ Output EC2 public IP
+      - name: Show EC2 Public IP
+        run: terraform output -raw my_public_ip
+        id: ec2_ip    

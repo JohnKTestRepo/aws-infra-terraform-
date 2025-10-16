@@ -1,0 +1,48 @@
+name: Terraform AWS Deploy
+
+on:
+  push:
+    branches:
+      - cleanup  # Trigger on pushes to the main branch
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-2
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      # 3️⃣ Create terraform.tfvars file
+      - name: Create terraform.tfvars with secrets
+        run: |
+            cat <<EOF > terraform.tfvars
+            region            = "us-east-2"
+            vpc_id           = "${{ secrets.VPC_ID }}"
+            my_public_ip     = "${{ secrets.MY_PUBLIC_IP }}"
+            private_key_path  = "${{ secrets.EC2_PRIVATE_KEY_PATH }}"
+            public_key        = "${{ secrets.EC2_PUBLIC_KEY }}"
+            instance_type     = "${{ secrets.EC2_INSTANCE_TYPE }}"
+            server_name       = "${{ secrets.EC2_SERVER_NAME }}"
+            EOF
+
+      # 4️⃣ Destroy Terraform
+      - name: Terraform Destroy
+        if: github.ref == 'refs/heads/cleanup'
+        run:  terraform destroy --parallelism=5 -auto-approve
+
+  
+   

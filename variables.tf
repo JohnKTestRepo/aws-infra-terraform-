@@ -1,4 +1,4 @@
-variable "aws_region" {
+variable "region" {
   description = "The AWS region to create resources in"
   type        = string
   default     = "us-east-2"
@@ -20,14 +20,16 @@ variable "private_key_path" {
 }
 
 variable "public_key" {
-  type = string
+  type        = string
   description = "The public key to be used for the instance"
 }
 
 variable "instance_type" {
+  description = "EC2 instance type"
   type = string
 }
 
 variable "server_name" {
+  description = "Tag Name for the EC2 server"
   type = string
 }

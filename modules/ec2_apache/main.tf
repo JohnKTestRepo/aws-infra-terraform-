@@ -37,6 +37,4 @@ resource "aws_instance" "my_server" {
   }
 }
 
-output "instance_id" {
-  value = aws_instance.my_server.id
-}
+
