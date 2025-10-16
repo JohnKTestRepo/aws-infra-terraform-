@@ -59,7 +59,7 @@ jobs:
       # 7️⃣ Terraform Apply
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
-        run: terraform apply --parallelism -auto-approve
+        run: terraform apply --parallelism=5 -auto-approve
 
       # 8️⃣ Output EC2 public IP
       - name: Show EC2 Public IP
